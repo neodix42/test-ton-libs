@@ -79,6 +79,8 @@ public class Main {
                 .verbosityLevel(TxVerbosityLevel.TRUNCATED)
                 .build();
 
+        txEmulator.setDebugEnabled(false);
+
         testTxEmulator(txEmulator);
         testTvmEmulator(tonlib, absolutePathEmulator);
       }
@@ -132,6 +134,7 @@ public class Main {
 
       tvmEmulator.setDebugEnabled(true);
       tvmEmulator.setGasLimit(200000);
+      tvmEmulator.setDebugEnabled(false);
 
       testTvmEmulatorEmulateRunMethod(tvmEmulator);
       testTvmEmulatorSendExternalMessage(tvmEmulator, walletV4R2);
