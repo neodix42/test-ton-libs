@@ -51,7 +51,7 @@ public class Main {
           Tonlib.builder()
               .testnet(false)
               .pathToTonlibSharedLib(absolutePathTonlib)
-              .verbosityLevel(VerbosityLevel.FATAL)
+              .verbosityLevel(VerbosityLevel.DEBUG)
               .ignoreCache(false)
               .build();
 
@@ -76,7 +76,7 @@ public class Main {
             TxEmulator.builder()
                 .pathToEmulatorSharedLib(absolutePathEmulator)
                 .customConfig(config.toBase64())
-                .verbosityLevel(TxVerbosityLevel.TRUNCATED)
+                .verbosityLevel(TxVerbosityLevel.WITH_ALL_STACK_VALUES)
                 .build();
 
         txEmulator.setDebugEnabled(false);
@@ -129,7 +129,7 @@ public class Main {
               .pathToEmulatorSharedLib(absolutePathEmulator)
               .codeBoc(code.toBase64())
               .dataBoc(data.toBase64())
-              .verbosityLevel(TvmVerbosityLevel.TRUNCATED)
+              .verbosityLevel(TvmVerbosityLevel.WITH_ALL_STACK_VALUES)
               .build();
 
       tvmEmulator.setDebugEnabled(true);
