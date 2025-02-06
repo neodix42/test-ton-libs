@@ -51,7 +51,7 @@ public class Main {
           Tonlib.builder()
               .testnet(false)
               .pathToTonlibSharedLib(absolutePathTonlib)
-              .verbosityLevel(VerbosityLevel.DEBUG)
+              .verbosityLevel(VerbosityLevel.INFO)
               .ignoreCache(false)
               .build();
 
@@ -76,7 +76,7 @@ public class Main {
             TxEmulator.builder()
                 .pathToEmulatorSharedLib(absolutePathEmulator)
                 .customConfig(config.toBase64())
-                .verbosityLevel(TxVerbosityLevel.WITH_ALL_STACK_VALUES)
+                .verbosityLevel(TxVerbosityLevel.TRUNCATED)
                 .build();
 
         txEmulator.setDebugEnabled(false);
@@ -182,6 +182,11 @@ public class Main {
               masterChainInfo.getLast().getShard(),
               0);
       System.out.println(lookupBlock);
+
+      Address address = Address.of("-1:3333333333333333333333333333333333333333333333333333333333333333");
+      RunResult result = tonlib.runMethod(address, "active_election_id");
+      TvmStackEntryNumber electionId = (TvmStackEntryNumber) result.getStack().get(0);
+      System.out.println("electionId: "+ electionId.getNumber());
 
       SmcLibraryResult libraryResult =
           tonlib.getLibraries(
