@@ -88,8 +88,10 @@ public class Main {
 
         txEmulator.setDebugEnabled(false);
 
-        testTxEmulator(txEmulator);
         testTvmEmulator(tonlib, absolutePathEmulator);
+
+        testTxEmulator(txEmulator);
+
       }
     } else {
       System.out.println(
@@ -101,7 +103,6 @@ public class Main {
 
   private static void testTxEmulator(TxEmulator txEmulator) {
     try {
-      testTxEmulatorEmptyAccount(txEmulator);
       testTxEmulatorWithAccount(txEmulator);
       testTxEmulatorEmulateTickTx(txEmulator);
       testTxEmulatorWalletV5ExternalMsgSimplified(txEmulator);
@@ -210,42 +211,6 @@ public class Main {
     }
   }
 
-  private static void testTxEmulatorEmptyAccount(TxEmulator txEmulator) {
-    ShardAccount shardAccount =
-        ShardAccount.builder()
-            .account(Account.builder().isNone(true).build())
-            .lastTransHash(BigInteger.ZERO)
-            .lastTransLt(BigInteger.ZERO)
-            .build();
-    String shardAccountBocBase64 = shardAccount.toCell().toBase64();
-
-    Message internalMsg =
-        Message.builder()
-            .info(
-                InternalMessageInfo.builder()
-                    .srcAddr(
-                        MsgAddressIntStd.builder()
-                            .workchainId((byte) 0)
-                            .address(BigInteger.ZERO)
-                            .build())
-                    .dstAddr(
-                        MsgAddressIntStd.builder()
-                            .workchainId((byte) 0)
-                            .address(BigInteger.ZERO)
-                            .build())
-                    .value(CurrencyCollection.builder().coins(Utils.toNano(1)).build())
-                    .bounce(false)
-                    .createdAt(0)
-                    .build())
-            .init(null)
-            .body(null)
-            .build();
-    String internalMsgBocBase64 = internalMsg.toCell().toBase64();
-    EmulateTransactionResult result =
-        txEmulator.emulateTransaction(shardAccountBocBase64, internalMsgBocBase64);
-    System.out.println(result.isSuccess());
-  }
-
   private static void testTxEmulatorWithAccount(TxEmulator txEmulator) {
     ShardAccount shardAccount =
         ShardAccount.builder()
@@ -255,15 +220,10 @@ public class Main {
             .build();
     String shardAccountBocBase64 = shardAccount.toCell().toBase64();
 
-    Message internalMsg =
-        Message.builder()
+    MessageRelaxed internalMsg =
+        MessageRelaxed.builder()
             .info(
-                InternalMessageInfo.builder()
-                    .srcAddr(
-                        MsgAddressIntStd.builder()
-                            .workchainId((byte) 0)
-                            .address(BigInteger.ZERO)
-                            .build())
+                InternalMessageInfoRelaxed.builder()
                     .dstAddr(
                         MsgAddressIntStd.builder()
                             .workchainId((byte) 0)
