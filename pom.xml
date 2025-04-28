@@ -17,18 +17,18 @@
         <dependency>
             <groupId>io.github.neodix42</groupId>
             <artifactId>tonlib</artifactId>
-            <version>0.8.2</version>
+            <version>0.9.7</version>
         </dependency>
         <dependency>
             <groupId>io.github.neodix42</groupId>
             <artifactId>emulator</artifactId>
-            <version>0.8.2</version>
+            <version>0.9.7</version>
         </dependency>
 
         <dependency>
             <groupId>io.github.neodix42</groupId>
             <artifactId>smartcontract</artifactId>
-            <version>0.8.2</version>
+            <version>0.9.7</version>
         </dependency>
     </dependencies>
 

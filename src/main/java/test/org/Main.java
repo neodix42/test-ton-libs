@@ -12,7 +12,7 @@ import org.ton.java.smartcontract.types.WalletV4R2Config;
 import org.ton.java.smartcontract.types.WalletV5Config;
 import org.ton.java.smartcontract.wallet.v4.WalletV4R2;
 import org.ton.java.smartcontract.wallet.v5.WalletV5;
-import org.ton.java.tlb.types.*;
+import org.ton.java.tlb.*;
 import org.ton.java.tonlib.Tonlib;
 import org.ton.java.tonlib.types.*;
 import org.ton.java.tonlib.types.BlockIdExt;
@@ -23,6 +23,7 @@ import org.ton.java.smartcontract.types.Destination;
 import java.io.File;
 import java.math.BigInteger;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 
 public class Main {
@@ -47,9 +48,15 @@ public class Main {
       System.out.println("Found tonlib: " + absolutePathTonlib);
       System.out.println();
 
+      boolean testnet = false;
+      if (Arrays.asList(args).contains("testnet")) {
+        System.out.println("using testnet...");
+        testnet = true;
+      }
+
       Tonlib tonlib =
           Tonlib.builder()
-              .testnet(false)
+              .testnet(testnet)
               .pathToTonlibSharedLib(absolutePathTonlib)
               .verbosityLevel(VerbosityLevel.INFO)
               .ignoreCache(false)
@@ -86,9 +93,9 @@ public class Main {
       }
     } else {
       System.out.println(
-          "Usage: test-ton4j.jar <name in current dir or absolute path to tonlibjson>");
+          "Usage: test-ton4j.jar <path to tonlibjson> [testnet]");
       System.out.println(
-          "Usage: test-ton4j.jar <name in current dir or absolute path to tonlibjson and emulator>");
+          "Usage: test-ton4j.jar <path to tonlibjson> [path to emulator] [testnet]");
     }
   }
 
@@ -129,7 +136,7 @@ public class Main {
               .pathToEmulatorSharedLib(absolutePathEmulator)
               .codeBoc(code.toBase64())
               .dataBoc(data.toBase64())
-              .verbosityLevel(TvmVerbosityLevel.WITH_ALL_STACK_VALUES)
+              .verbosityLevel(TvmVerbosityLevel.DUMP_STACK)
               .build();
 
       tvmEmulator.setDebugEnabled(true);
