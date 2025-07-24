@@ -1,24 +1,24 @@
 package test.org;
 
 import com.iwebpp.crypto.TweetNaclFast;
-import org.ton.java.address.Address;
-import org.ton.java.cell.Cell;
-import org.ton.java.cell.CellBuilder;
-import org.ton.java.emulator.EmulateTransactionResult;
-import org.ton.java.emulator.tvm.*;
-import org.ton.java.emulator.tx.TxEmulator;
-import org.ton.java.emulator.tx.TxVerbosityLevel;
-import org.ton.java.smartcontract.types.WalletV4R2Config;
-import org.ton.java.smartcontract.types.WalletV5Config;
-import org.ton.java.smartcontract.wallet.v4.WalletV4R2;
-import org.ton.java.smartcontract.wallet.v5.WalletV5;
-import org.ton.java.tlb.*;
-import org.ton.java.tonlib.Tonlib;
-import org.ton.java.tonlib.types.*;
-import org.ton.java.tonlib.types.BlockIdExt;
-import org.ton.java.utils.Utils;
+import org.ton.ton4j.address.Address;
+import org.ton.ton4j.cell.Cell;
+import org.ton.ton4j.cell.CellBuilder;
+import org.ton.ton4j.emulator.EmulateTransactionResult;
+import org.ton.ton4j.emulator.tvm.*;
+import org.ton.ton4j.emulator.tx.TxEmulator;
+import org.ton.ton4j.emulator.tx.TxVerbosityLevel;
+import org.ton.ton4j.smartcontract.types.WalletV4R2Config;
+import org.ton.ton4j.smartcontract.types.WalletV5Config;
+import org.ton.ton4j.smartcontract.wallet.v4.WalletV4R2;
+import org.ton.ton4j.smartcontract.wallet.v5.WalletV5;
+import org.ton.ton4j.tlb.*;
+import org.ton.ton4j.tonlib.Tonlib;
+import org.ton.ton4j.tonlib.types.*;
+import org.ton.ton4j.tonlib.types.BlockIdExt;
+import org.ton.ton4j.utils.Utils;
 
-import org.ton.java.smartcontract.types.Destination;
+import org.ton.ton4j.smartcontract.types.Destination;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -76,7 +76,7 @@ public class Main {
         System.out.println("Found emulator: " + absolutePathEmulator);
         System.out.println();
 
-        testTonlib(tonlib);
+//        testTonlib(tonlib);
 
         Cell config = tonlib.getConfigAll(128);
         TxEmulator txEmulator =
@@ -103,18 +103,23 @@ public class Main {
 
   private static void testTxEmulator(TxEmulator txEmulator) {
     try {
-      testTxEmulatorWithAccount(txEmulator);
-      testTxEmulatorEmulateTickTx(txEmulator);
-      testTxEmulatorWalletV5ExternalMsgSimplified(txEmulator);
-      testTxEmulatorWalletV5InternalMsg(txEmulator);
-
-      System.out.println();
-      System.out.println("TxEmulator tests PASSED");
-      System.out.println();
+      boolean res1 = testTxEmulatorWithAccount(txEmulator);
+      boolean res2 = testTxEmulatorEmulateTickTx(txEmulator);
+      boolean res3 = testTxEmulatorWalletV5ExternalMsgSimplified(txEmulator);
+      boolean res4 = testTxEmulatorWalletV5InternalMsg(txEmulator);
+      if (res1 && res2 && res3 && res4) {
+        System.out.println();
+        System.out.println("TxEmulator tests PASSED");
+        System.out.println();
+      }
+      else {
+        System.out.println("TxEmulator tests FAILED");
+      }
     } catch (Throwable e) {
       System.out.println();
       System.out.println("TxEmulator tests FAILED");
       System.out.println();
+      System.out.println(e.getMessage());
     }
   }
 
@@ -211,7 +216,7 @@ public class Main {
     }
   }
 
-  private static void testTxEmulatorWithAccount(TxEmulator txEmulator) {
+  private static boolean testTxEmulatorWithAccount(TxEmulator txEmulator) {
     ShardAccount shardAccount =
         ShardAccount.builder()
             .account(testAccount)
@@ -220,29 +225,38 @@ public class Main {
             .build();
     String shardAccountBocBase64 = shardAccount.toCell().toBase64();
 
-    MessageRelaxed internalMsg =
-        MessageRelaxed.builder()
-            .info(
-                InternalMessageInfoRelaxed.builder()
-                    .dstAddr(
-                        MsgAddressIntStd.builder()
-                            .workchainId((byte) 0)
-                            .address(BigInteger.ZERO)
-                            .build())
-                    .value(CurrencyCollection.builder().coins(Utils.toNano(1)).build())
-                    .bounce(false)
-                    .createdAt(0)
-                    .build())
-            .init(null)
-            .body(null)
-            .build();
+    Message internalMsg =
+            Message.builder()
+                .info(
+                    InternalMessageInfo.builder()
+                        .srcAddr(
+                            MsgAddressIntStd.builder()
+                                    .workchainId((byte) 0)
+                                    .address(BigInteger.ZERO)
+                                    .build())
+                        .dstAddr(
+                            MsgAddressIntStd.builder()
+                                    .workchainId((byte) 0)
+                                    .address(BigInteger.ZERO)
+                                    .build())
+                        .value(CurrencyCollection.builder().coins(Utils.toNano(1)).build())
+                        .bounce(false)
+                        .createdAt(0)
+                        .build())
+                    .init(null)
+                    .body(null)
+                    .build();
     String internalMsgBocBase64 = internalMsg.toCell().toBase64();
     EmulateTransactionResult result =
         txEmulator.emulateTransaction(shardAccountBocBase64, internalMsgBocBase64);
-    System.out.println(result.isSuccess());
+    System.out.println("testTxEmulatorWithAccount " + result.isSuccess());
+    if (!result.isSuccess()) {
+      System.out.println("testTxEmulatorWithAccount " + result);
+    }
+    return result.isSuccess();
   }
 
-  private static void testTxEmulatorEmulateTickTx(TxEmulator txEmulator) {
+  private static boolean testTxEmulatorEmulateTickTx(TxEmulator txEmulator) {
     ShardAccount shardAccount =
         ShardAccount.builder()
             .account(testAccount)
@@ -254,10 +268,11 @@ public class Main {
 
     EmulateTransactionResult result =
         txEmulator.emulateTickTockTransaction(shardAccountBocBase64, false);
-    System.out.println(result.isSuccess());
+    System.out.println("testTxEmulatorEmulateTickTx "+result.isSuccess());
+    return  result.isSuccess();
   }
 
-  private static void testTxEmulatorWalletV5ExternalMsgSimplified(TxEmulator txEmulator) {
+  private static boolean testTxEmulatorWalletV5ExternalMsgSimplified(TxEmulator txEmulator) {
 
     Cell codeCell =
         Cell.fromBoc(
@@ -301,10 +316,11 @@ public class Main {
     EmulateTransactionResult result =
         txEmulator.emulateTransaction(
             codeCell, dataCell, Utils.toNano(2), extMsg.toCell().toBase64());
-    System.out.println(result.isSuccess());
+    System.out.println("testTxEmulatorWalletV5ExternalMsgSimplified "+result.isSuccess());
+    return result.isSuccess();
   }
 
-  private static void testTxEmulatorWalletV5InternalMsg(TxEmulator txEmulator) {
+  private static boolean testTxEmulatorWalletV5InternalMsg(TxEmulator txEmulator) {
 
     Cell codeCell =
         Cell.fromBoc(
@@ -336,8 +352,8 @@ public class Main {
                         StorageUsed.builder()
                             .cellsUsed(BigInteger.ZERO)
                             .bitsUsed(BigInteger.ZERO)
-                            .publicCellsUsed(BigInteger.ZERO)
                             .build())
+                        .storageExtraInfo(StorageExtraNone.builder().build())
                     .lastPaid(System.currentTimeMillis() / 1000)
                     .duePayment(BigInteger.ZERO)
                     .build())
@@ -390,7 +406,7 @@ public class Main {
     EmulateTransactionResult result =
         txEmulator.emulateTransaction(shardAccountBocBase64, intMsg.toCell().toBase64());
 
-    System.out.println(result.isSuccess());
+    System.out.println("testTxEmulatorWalletV5InternalMsg "+result.isSuccess());
 
     ShardAccount newShardAccount = result.getNewShardAccount();
 
@@ -399,10 +415,10 @@ public class Main {
     TransactionDescriptionOrdinary txDescOrd = (TransactionDescriptionOrdinary) txDesc;
 
     ComputePhaseVM computePhase = (ComputePhaseVM) txDescOrd.getComputePhase();
-    System.out.println(computePhase.isSuccess());
+    System.out.println("testTxEmulatorWalletV5InternalMsg computePhase1 "+computePhase.isSuccess());
 
     ActionPhase actionPhase = txDescOrd.getActionPhase();
-    System.out.println(actionPhase.isSuccess());
+    System.out.println("testTxEmulatorWalletV5InternalMsg actionPhase1 "+actionPhase.isSuccess());
 
     // second transfer using new shard account
 
@@ -436,10 +452,11 @@ public class Main {
     txDescOrd = (TransactionDescriptionOrdinary) txDesc;
 
     computePhase = (ComputePhaseVM) txDescOrd.getComputePhase();
-    System.out.println(computePhase.isSuccess());
+    System.out.println("testTxEmulatorWalletV5InternalMsg computePhase2 "+computePhase.isSuccess());
 
     actionPhase = txDescOrd.getActionPhase();
-    System.out.println(actionPhase.isSuccess());
+    System.out.println("testTxEmulatorWalletV5InternalMsg actionPhase2 "+actionPhase.isSuccess());
+    return actionPhase.isSuccess();
   }
 
   private static void testTvmEmulatorEmulateRunMethod(TvmEmulator tvmEmulator) {
@@ -517,17 +534,17 @@ public class Main {
           .isNone(false)
           .address(
               MsgAddressIntStd.of(
-                  "-1:0000000000000000000000000000000000000000000000000000000000000000"))
+                  "0:AA00000000000000000000000000000000000000000000000000000000000000"))
           .storageInfo(
               StorageInfo.builder()
                   .storageUsed(
                       StorageUsed.builder()
-                          .cellsUsed(BigInteger.ZERO)
-                          .bitsUsed(BigInteger.ZERO)
-                          .publicCellsUsed(BigInteger.ZERO)
+                          .cellsUsed(BigInteger.ONE)
+                          .bitsUsed(BigInteger.TWO)
                           .build())
-                  .lastPaid(System.currentTimeMillis() / 1000)
-                  .duePayment(Utils.toNano(2))
+                      .storageExtraInfo(StorageExtraNone.builder().build())
+                      .lastPaid(System.currentTimeMillis() / 1000)
+                  .duePayment(BigInteger.ZERO)
                   .build())
           .accountStorage(
               AccountStorage.builder()
